@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fresh Laundry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-lg bg-white p-6 rounded-2xl shadow-lg">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Pemesanan Paket Fresh Laundry</h1>
+
+        <div id="step1" class="space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700">Pilih Paket Laundry</h2>
+            <select id="paket" class="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300">
+                <optgroup label="Paket Cuci Kering Setrika">
+                    <option value="6000">Paket A (3 hari) - Rp 6.000/kg</option>
+                    <option value="7000">Paket B (2 hari) - Rp 7.000/kg</option>
+                    <option value="9000">Paket C (1 hari) - Rp 9.000/kg</option>
+                    <option value="12000">Paket D (6 jam) - Rp 12.000/kg</option>
+                </optgroup>
+                <optgroup label="Paket Cuci Saja">
+                    <option value="4000">Paket A (3 hari) - Rp 4.000/kg</option>
+                    <option value="5000">Paket B (2 hari) - Rp 5.000/kg</option>
+                    <option value="7000">Paket C (1 hari) - Rp 7.000/kg</option>
+                    <option value="9000">Paket D (6 jam) - Rp 9.000/kg</option>
+                </optgroup>
+            </select>
+            <input id="berat" type="number" placeholder="Masukkan berat (kg) / jumlah pcs"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300">
+            <button onclick="nextStep(2)"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Lanjut</button>
+        </div>
+
+        <div id="step2" class="hidden space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700">Isi Data Pemesanan</h2>
+            <input id="nama" type="text" placeholder="Nama"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300">
+            <input id="alamat" type="text" placeholder="Alamat"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300">
+            <input id="nohp" type="text" placeholder="No HP"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300">
+            <button onclick="nextStep(3)"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Konfirmasi</button>
+        </div>
+
+        <div id="step3" class="hidden space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700">Pembayaran</h2>
+            <p class="text-xl font-bold">Total: <span id="harga" class="text-blue-600"></span></p>
+            <button onclick="nextStep(4)"
+                class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition">Bayar</button>
+        </div>
+
+        <div id="step4" class="hidden space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700">Struk Pembayaran</h2>
+            <p><strong>Nama:</strong> <span id="strukNama"></span></p>
+            <p><strong>Alamat:</strong> <span id="strukAlamat"></span></p>
+            <p><strong>No HP:</strong> <span id="strukNoHp"></span></p>
+            <p><strong>Paket:</strong> <span id="strukPaket"></span></p>
+            <p class="text-xl font-bold"><strong>Total:</strong> <span id="strukHarga" class="text-green-600"></span>
+            </p>
+            <button onclick="exportPDF()"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Unduh PDF</button>
+        </div>
+    </div>
+
+    <script>
+        function nextStep(step) {
+            document.querySelectorAll('div[id^=step]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step${step}`).classList.remove('hidden');
+
+            if (step === 3) {
+                let paket = document.getElementById("paket");
+                let hargaPerKg = parseInt(paket.value);
+                let berat = document.getElementById("berat").value;
+                let totalHarga = hargaPerKg * berat;
+                document.getElementById("harga").innerText = "Rp " + totalHarga.toLocaleString("id-ID");
+            }
+
+            if (step === 4) {
+                document.getElementById("strukNama").innerText = document.getElementById("nama").value;
+                document.getElementById("strukAlamat").innerText = document.getElementById("alamat").value;
+                document.getElementById("strukNoHp").innerText = document.getElementById("nohp").value;
+                document.getElementById("strukPaket").innerText = document.getElementById("paket").options[document.getElementById("paket").selectedIndex].text;
+                document.getElementById("strukHarga").innerText = document.getElementById("harga").innerText;
+            }
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Struk Pemesanan Laundry", 20, 20);
+            doc.text("Nama: " + document.getElementById("strukNama").innerText, 20, 30);
+            doc.text("Alamat: " + document.getElementById("strukAlamat").innerText, 20, 40);
+            doc.text("No HP: " + document.getElementById("strukNoHp").innerText, 20, 50);
+            doc.text("Paket: " + document.getElementById("strukPaket").innerText, 20, 60);
+            doc.text("Total: " + document.getElementById("strukHarga").innerText, 20, 70);
+            doc.save("Struk_Pemesanan.pdf");
+        }
+    </script>
+</body>
+
+</html>
